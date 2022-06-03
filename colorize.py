@@ -14,19 +14,20 @@ from unet import UNet
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def train(net, optimizer, loader, epochs=5, writer=None):
-    criterion = ...
+    criterion = torch.nn.CrossEntropyLoss()
     for epoch in range(epochs):
         running_loss = []
         t = tqdm(loader)
         for x, y in t: # x: black and white image, y: colored image 
-            ...
-            ...
-            ...
-            ...
-            ...
-            ...
-            ...
-            ...
+            x, y = x.to(device), y.to(device)
+            outputs = net(x)
+            loss = criterion(outputs, y)
+            running_loss.append(loss.item())
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            t.set_description(f'training loss: {mean(running_loss)}')
+            
         if writer is not None:
             #Logging loss in tensorboard
             writer.add_scalar('training loss', mean(running_loss), epoch)
@@ -46,18 +47,18 @@ def train(net, optimizer, loader, epochs=5, writer=None):
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp_name', type=str, default = 'Colorize', help='experiment name')
-    parser.add_argument('--data_path', ...)
-    parser.add_argument('--batch_size'...)
-    parser.add_argument('--epochs'...)
-    parser.add_argument('--lr'...)
+    parser.add_argument('--data_path', type=str, default = '/data/landscapes', help='data path')
+    parser.add_argument('--batch_size', type=int, default = 1, help='batch size')
+    parser.add_argument('--epochs', type=int, default = 1, help='epochs')
+    parser.add_argument('--lr', type=int, default = 1e-3, help='learning rate')
 
-    exp_name = ...
-    args = ...
-    data_path = ...
-    batch_size = ...
-    epochs = ...
-    lr = ...
-    unet = UNet().cuda()
+    exp_name = 'colorize'
+    args = parser.parse_args()
+    data_path = 'data/landscapes'
+    batch_size = 1
+    epochs = 2
+    lr = 1e-3
+    unet = UNet().to(device)
     loader = get_colorized_dataset_loader(path=data_path, 
                                         batch_size=batch_size, 
                                         shuffle=True, 
