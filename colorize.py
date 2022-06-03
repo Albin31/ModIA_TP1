@@ -18,7 +18,7 @@ tf.io.gfile = tb.compat.tensorflow_stub.io.gfile
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def train(net, optimizer, loader, epochs=5, writer=None):
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = torch.nn.MSELoss()
     for epoch in range(epochs):
         running_loss = []
         t = tqdm(loader)
@@ -56,12 +56,12 @@ if __name__=='__main__':
     parser.add_argument('--epochs', type=int, default = 1, help='epochs')
     parser.add_argument('--lr', type=float, default = 1e-3, help='learning rate')
 
-    exp_name = 'colorize'
     args = parser.parse_args()
-    data_path = 'data/landscapes'
-    batch_size = 1
-    epochs = 2
-    lr = 1e-3
+    exp_name = args.exp_name
+    data_path = args.data_path
+    batch_size = args.batch_size
+    epochs = args.epochs
+    lr = args.lr
     unet = UNet().to(device)
     loader = get_colorized_dataset_loader(path=data_path, 
                                         batch_size=batch_size, 
